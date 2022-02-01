@@ -10,7 +10,7 @@ public class MonsterThread {    //42. Создали класс
 
     public MonsterThread(Game_Logic gl) {   //a)
         currentGL = gl;
-    }
+    }   //a)
 
     public void startMonsterThread() {  //43. Метод запускающий монстров в игре
         Thread one = new Thread() { //Создали новый поток
@@ -35,7 +35,7 @@ public class MonsterThread {    //42. Создали класс
 
         List<String> lines = new ArrayList<String>();
         try {
-            lines = currentGL.readLines("C:\\Users\\user\\IdeaProjects\\RPG_1\\src\\TextFiles\\MonsterLocs.txt");   //считываем файл и заносим его в переменную  лист типа String lines
+            lines = currentGL.readLines("C:\\Users\\user\\IdeaProjects\\RPG_1\\src\\TextFiles\\MonsterLocs.txt");   //считываем файл и заносим его в переменную lines  листa типа String
         } catch (IOException e) {
             e.printStackTrace();
         }

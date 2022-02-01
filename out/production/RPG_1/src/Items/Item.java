@@ -9,8 +9,4 @@ public class Item {
         System.out.println(name);
     }
 
-//    public void isWearlock() {
-//        Class<? extends PC> equipments = Game_Objects.pc.getClass(Diamond_Ring x, Flaming_Sword y);
-//    }
-
 }

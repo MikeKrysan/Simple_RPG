@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 import static java.lang.Class.*;
@@ -11,7 +12,6 @@ import static java.lang.Class.*;
 public class Game_Logic {
     public Game_Logic() {                       //7. Прописали игровую логику перемещения по комнатам
         Game_Objects.room.add(new Room(0));  //(0)   //8 Первое, что случается с запуском игры - добавили в вызванный конструктор Game_Logic() новую комнату с номером "1"
-        // Game_Objects.room.get(0).name = "Floating in Space";    //Размещаемся в игре
 
         //part8 (38 п.)
         List<String> roomInfo = new ArrayList<>();  //38.Создаем лист типа String
@@ -60,13 +60,6 @@ public class Game_Logic {
             }
         }
         //еnd of part 8 (38п.)
-
-//        Game_Objects.room.get(0).desc.add("Desc Line 1");
-//        Game_Objects.room.get(0).desc.add("Desc Line 2");
-//        Game_Objects.room.get(0).desc.add("Desc Line 3");
-//        Game_Objects.room.get(0).desc.add("Desc Line 4");
-//        Game_Objects.room.get(0).exits.add("South 2");
-//        Game_Objects.room.get(0).exits.add("North 3");
     }
 
     public void waitForCommand() {
@@ -105,7 +98,7 @@ public class Game_Logic {
             Game_Objects.pc.eq();
         }
         if (x[0].equals("remove")) { //37. Команда снять вещь
-            Game_Objects.pc.remove(x);
+            Game_Objects.pc.removeEq(x);
         }
         if (x[0].equals("move")) {   //41.Первое слово к команде перемещения по локациям
             move(x);
@@ -174,7 +167,7 @@ public class Game_Logic {
                             try {
                                 Game_Objects.room.get(y).npc.add((NPC) forName(localNPC.id).getDeclaredConstructor().newInstance());    // (а) мы собираемся взять комнату с игровым персонажем(монстром), в которой находится игрок(я) и мы собираемся добавить туда игровой персонаж. Для этого для NPC(с явным приведением) мы вызываем метод forName() - который вызовет стрим игрового персонажа, а getDeclaredConstructor возвращает объект Constructor, который отражает указанный конструктор класса предстваленного этим объектом. На вызванном конструкторе вызываем метод newInstance, который использует конструктор для создания и инициализации нового экземпляра класса объявления конструктора с указанными параметрами инициализации.
                                 System.out.println("You summon a " + Game_Objects.room.get(y).npc   //мы собираемся получить комнату y. Мы взглянем на список npc и теперь получим список npc.
-                                        .get(Game_Objects.room.get(y).npc.size() - 1).name);  //Game_Object get y — это комната, в которой сейчас находится пользователь. (npc.size()-1) - это последний npc, который был добавлен и только что мы добавили еще одни npc, поэтому, если мы добавили npc в список npc внутри комнаты, он будет иметь размер один. Но добавляется нулевая позиция
+                                        .get(Game_Objects.room.get(y).npc.size()-1).name);  //Game_Object get y — это комната, в которой сейчас находится пользователь. (npc.size()-1) - это последний npc, который был добавлен и только что мы добавили еще одни npc, поэтому, если мы добавили npc в список npc внутри комнаты, он будет иметь размер один. Но добавляется нулевая позиция
                             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | InvocationTargetException | NoSuchMethodException e) {
                                 e.printStackTrace();
                             }
@@ -191,7 +184,7 @@ public class Game_Logic {
         Game_Objects.pc.name = sc.next();   //Задаем ему указанное нами имя
         System.out.println("For the sake of simplicity, the gods are going to give you 100hp and 75 accuracy to start");
         Game_Objects.pc.hp = 100;
-        Game_Objects.pc.accuracy = 75;
+        Game_Objects.pc.accuracy = 60;
         Game_Objects.pc.inRoom = 2;
     }
 
@@ -273,7 +266,7 @@ public class Game_Logic {
                         String[] exitArray = exitRequested.split(" ");  //поместим все exit из комнаты в массив, разделяя пробелом
                         if (x[1].equalsIgnoreCase(exitArray[1])) {   //если команда игрока(второе слово) равна exit-ам массива
                             Game_Objects.pc.inRoom = Integer.parseInt((exitArray[2]));  //индекс массива 2 парсим в инт, так как получаемое значение - строка.
-                            String[] badProgramming = new String[1];
+                            String[] badProgramming = new String[1];    //следующие три строки сделаны для того, чтобы когда игрок переходит в другую комнату, вызывался метод look()- как если бы мы вручную в консоль ввели команду "look"
                             badProgramming[0] = "nada";
                             look(badProgramming);
                             ////////////////
@@ -286,43 +279,104 @@ public class Game_Logic {
         }
     }
 
-    public void attack(String[] x) {    //51.
-        for (int i = 0; i < Game_Objects.room.size(); i++) {  //пройдемся по всем комнатам
-            if (Game_Objects.room.get(i).number == Game_Objects.pc.inRoom) { //сверили комнаты с комнатой, в которой находится игрок
-                for (int y = 0; y < Game_Objects.room.get(i).npc.size(); y++) {  //пройдемся по всем монстрам в данной комнате, где находится игрок
-                    if (Game_Objects.room.get(i).npc.get(y).id.equalsIgnoreCase(x[1])) { //Выясняем, что за тварь мы хотим атаковать
-                        int npc_hit = Game_Objects.rng.returnRandom(100);   //рандомно создаем очки урона у  монстра
-                        npc_hit = npc_hit + (Game_Objects.room.get(i).npc.get(y).accuracy / 2); //урон равен базовому урону и плюс половина точности
-                        if (npc_hit > 50) {  //если очки урона больше 50
-                            int npc_damage = Game_Objects.rng.returnRandom(10); //повреждение будет рандомным числом до 10
-                            Game_Objects.pc.hp = Game_Objects.pc.hp - npc_damage;   //жизнь игрока уменьшается на размер нанесенного урона
-                            System.out.println("The " + Game_Objects.room.get(i).npc.get(y).name + " hit you of " + npc_damage);    //выводим сообщение о полученом ущербе
-                        } else {
-                            System.out.println("The " + Game_Objects.room.get(i).npc.get(y).name + " missed");  //либо же монстр промахнулся
-                        }
+//    public void attack(String[] x) {    //51.
+//        for (int i = 0; i < Game_Objects.room.size(); i++) {  //пройдемся по всем комнатам
+//            if (Game_Objects.room.get(i).number == Game_Objects.pc.inRoom) { //сверили комнаты с комнатой, в которой находится игрок
+//                for (int y = 0; y < Game_Objects.room.get(i).npc.size(); y++) {  //пройдемся по всем монстрам в данной комнате, где находится игрок
+//                    if (Game_Objects.room.get(i).npc.get(y).id.equalsIgnoreCase(x[1])) { //Выясняем, что за тварь мы хотим атаковать
+//                        int npc_hit = Game_Objects.rng.returnRandom(100);   //рандомно создаем очки урона у  монстра
+//                        npc_hit = npc_hit + (Game_Objects.room.get(i).npc.get(y).accuracy / 2); //урон равен базовому урону и плюс половина точности
+//                        if (npc_hit > 50) {  //если очки урона больше 50
+//                            int npc_damage = Game_Objects.rng.returnRandom(10); //повреждение будет рандомным числом до 10
+//                            Game_Objects.pc.hp = Game_Objects.pc.hp - npc_damage;   //жизнь игрока уменьшается на размер нанесенного урона
+//                            System.out.println("The " + Game_Objects.room.get(i).npc.get(y).name + " hit you of " + npc_damage);    //выводим сообщение о полученом ущербе
+//                        } else {
+//                            System.out.println("The " + Game_Objects.room.get(i).npc.get(y).name + " missed");  //либо же монстр промахнулся
+//                        }
+//
+//
+//                        int pc_hit = Game_Objects.rng.returnRandom(100);    //рандомный урон игрока (до 100)
+//                        pc_hit = pc_hit + (Game_Objects.pc.accuracy / 2);    //урон будет равен полученному рандомно размеру урона плюс точность / 2
+//                        if (pc_hit > 50) {   //если наносимый ущерб будет больше 50
+//                            int pc_damage = Game_Objects.rng.returnRandom(10);  //сокращаем этот урон до (1-10)
+//                            Game_Objects.room.get(i).npc.get(y).hp = Game_Objects.room.get(i).npc.get(y).hp - pc_damage;    //и уменьшаем жизнь монстра на размер урона нанесенного игроком
+//                            System.out.println("You hit of " + Game_Objects.room.get(i).npc.get(y).name + " " + pc_damage + " of damage");
+//                            if (Game_Objects.room.get(i).npc.get(y).hp <= 0) {   //если здоровье монстра меньше или 0 - он погибает
+//                                npc_death(i, y);    //такой-то монстр умер в такой-то комнате
+//                            }
+//                        } else {
+//                            System.out.println("You missed");   //либо же вы пропустили
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+    public void attack(String[] x) {
+
+        int i = Game_Objects.pc.inRoom;
+        Optional<NPC> npcToAttack = Game_Objects.room.get(i).getNpc(x[1]);
+        if (npcToAttack == null)
+            return;
+
+        NPC monster = npcToAttack.get();
+
+        int npc_hit = Game_Objects.rng.returnRandom(100);
+        npc_hit = npc_hit + monster.accuracy / 2;
+
+        if (npc_hit > 50) {
+            int npc_damage = Game_Objects.rng.returnRandom(10);
+            Game_Objects.pc.hp = Game_Objects.pc.hp - npc_damage;
+            System.out.println("The " + monster.name + " hit you of " + npc_damage);
+        } else if (npc_hit > 4 && npc_hit <= 50) {
+            Game_Objects.pc.hp = Game_Objects.pc.hp - npc_hit;
+            System.out.println("The " + monster.name + " hit you of " + npc_hit);
+        } else {
+            System.out.println("The " + monster.name + " missed");
+        }
 
 
-                        int pc_hit = Game_Objects.rng.returnRandom(100);    //рандомный урон игрока (до 100)
-                        pc_hit = pc_hit + (Game_Objects.pc.accuracy / 2);    //урон будет равен полученному рандомно размеру урона плюс точность / 2
-                        if (pc_hit > 50) {   //если наносимый ущерб будет больше 50
-                            int pc_damage = Game_Objects.rng.returnRandom(10);  //сокращаем этот урон до (1-10)
-                            Game_Objects.room.get(i).npc.get(y).hp = Game_Objects.room.get(i).npc.get(y).hp - pc_damage;    //и уменьшаем жизнь монстра на размер урона нанесенного игроком
-                            System.out.println("You hit of " + Game_Objects.room.get(i).npc.get(y).name + " " + pc_damage + " of damage");
-                            if (Game_Objects.room.get(i).npc.get(y).hp <= 0) {   //если здоровье монстра меньше или 0 - он погибает
-                                npc_death(i, y);    //такой-то монстр умер в такой-то комнате
-                            }
-                        } else {
-                            System.out.println("You missed");   //либо же вы пропустили
-                        }
-                    }
-                }
+        int swordDamage = Game_Objects.pc.swordDamage();
+        int pc_hit = (swordDamage > 0 ? swordDamage : Game_Objects.rng.returnRandom(10)) + (Game_Objects.pc.isRingWear() ? Game_Objects.pc.accuracy / 2 : Game_Objects.pc.accuracy / 4);
+
+        for (int j = 0; j < Game_Objects.pc.wornItems.size(); j++) {
+            if (Game_Objects.pc.wornItems.get(j).id.equalsIgnoreCase("Flaming_sword")) {
+                System.out.println("My sword is your head off your shoulders!");
             }
+            if (Game_Objects.pc.wornItems.get(j).id.equalsIgnoreCase("Diamond_Ring")) {
+                System.out.println("Behold the full power of my pressure, " + monster.name + " !!!");
+            }
+        }
+
+        if (pc_hit > 50) {
+            pc_hit = Game_Objects.rng.returnRandom(10);
+            System.out.println("You hit of " + pc_hit + " by " + monster.name);
+        } else if (pc_hit > 4 && pc_hit <= 50) {
+            monster.hp = monster.hp - pc_hit;
+            System.out.println("You hit of " + pc_hit + " by " + monster.name);
+        } else {
+            System.out.println("You are missed!");
+        }
+
+        if (monster.hp <= 0) {
+            npc_death(i, monster);
+        }
+
+        if (Game_Objects.pc.hp <= 0) {
+            pc_death();
         }
     }
 
-    public void npc_death(int i, int y) {   //52.
-        System.out.println(Game_Objects.room.get(i).npc.get(y).name + " has died");
+
+    public void npc_death(int i, NPC y) {   //52.
+        System.out.println("A " + y.name + " has died");
         Game_Objects.room.get(i).npc.remove(y);
+    }
+
+    public void pc_death() {
+        System.out.println("My lord " + Game_Objects.pc.name + " , you are dead!");
+        System.out.println("Your travelling is over...");
     }
 
 }

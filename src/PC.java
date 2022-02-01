@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class PC {
     String name;
@@ -30,7 +31,7 @@ public class PC {
                     for(int z = 0; z < item.size(); z++) {  //заглянем в экипу персонажа
                         if(x[1].equalsIgnoreCase(item.get(z).id) && item.get(z).isWearable) {   //если экипировка одновременно находится у игрока и одновременно используется
                             if(item.get(z).wearloc.equals(wornItems.get(i).wearloc)) {  //мы хотим посмотреть, проверить каждый предмет в экипировке относительно предмета, который мы хотим надеть (в этой строке также проверим предметы в экипировке и надетые и сравним их по назначению)
-                                System.out.println("You already have something worn in that location.");
+                                System.out.println("You already have something worn in that part of your body.");
                                 isWearing = true;   //надето? - правда (переназначили значение)
 
                             }
@@ -46,7 +47,7 @@ public class PC {
         }
     }
 
-    public void remove(String[] x) {    //33. Метод для удаления экипировки
+    public void removeEq(String[] x) {    //33. Метод для удаления экипировки
         for(int i = 0; i < wornItems.size(); i++) { // Проходимся по всем одетым вещам
             if(wornItems.get(i).id.equalsIgnoreCase(x[1])) { //если предмет, который мы хотим удалить, соответсвует тому предмету, согласно команды с консоли мы хотим удалить
                 System.out.println("You remove a " + wornItems.get(i).id);
@@ -60,5 +61,21 @@ public class PC {
         for(int i = 0; i < wornItems.size(); i++) { //для всей экипировки, которая надета
             System.out.println(wornItems.get(i).name + ":" + wornItems.get(i).wearloc); //имя экипировки и  место применения
         }
+    }
+
+    public int swordDamage() {
+        for (int i = 0; i < Game_Objects.pc.wornItems.size(); i++) {
+            if(Game_Objects.pc.wornItems.get(i).id.equalsIgnoreCase("flaming_sword"))
+                return ((Flaming_Sword)wornItems.get(i)).damage;
+        }
+        return  0;
+    }
+
+    public boolean isRingWear() {
+        for(int i = 0; i < Game_Objects.pc.wornItems.size(); i++) {
+            if(Game_Objects.pc.wornItems.get(i).id.equalsIgnoreCase("diamond_ring"))
+                return true;
+        }
+        return false;
     }
 }
